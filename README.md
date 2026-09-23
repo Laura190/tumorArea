@@ -23,6 +23,7 @@ Fiji-Cellpose
 5. Restart Fiji
 6. Open `tumorArea.ijm` in Fiji
 7. `Run > Run` or use `Ctrl+R`
+8. Select the directory containing the image files, enter values for cell diameter, minimum size (note that both these values are in pixels) and scale in um. Enter 1 for scale if you want results in pixels.
 
 The first time the macro is run it will be slow as Fiji-Cellpose has to install a python environment. Subsequent runs should be faster.
 

@@ -1,4 +1,7 @@
 #@ File (label = "Input directory", style = "directory") input
+#@ int (label = "cell diameter for Cellpose", value=50, persist=true) cellDiam
+#@ int (label = "mininum size in pixels", value=900, persist=true) minSize
+#@ Float (label = "Scale in um", value=0.5, persist=true) scale
 
 run("CLIJ2 Macro Extensions", "cl_device=");
 run("Set Measurements...", "area centroid shape redirect=None decimal=9");
@@ -14,7 +17,8 @@ sigma = 10.0;
 Ext.CLIJ2_extendedDepthOfFocusSobelProjection(image1, image2, sigma);
 Ext.CLIJ2_pull(image2);
 //run("Gaussian Blur...", "sigma=2");
-run("Cellpose...", "cp_model=yeast_BF_cp3 custom_model= cell_diameter=50 cyto_channel=1 nuclei_channel=None min_size=900 normalize=true resample=true return_rois=true cellprob_threshold=0.0 flow_threshold=0.4 tile_overlap=0.1 niter=0 compute_flows=false shuffle=true mode_3d=None stitch_threshold=0.0 flow3d_smooth=0 torchversion=cpu usegpu=false");
+run("Set Scale...", "distance=1 known="+scale+" unit=um");
+run("Cellpose...", "cp_model=yeast_BF_cp3 custom_model= cell_diameter="+cellDiam+" cyto_channel=1 nuclei_channel=None min_size="+minSize+" normalize=true resample=true return_rois=true cellprob_threshold=0.0 flow_threshold=0.4 tile_overlap=0.1 niter=0 compute_flows=false shuffle=true mode_3d=None stitch_threshold=0.0 flow3d_smooth=0 torchversion=cpu usegpu=false");
 roiManager("Measure");
 File.makeDirectory(input+File.separator+"Results");
 saveAs("Tiff", input+File.separator+"Results"+File.separator+"B3_02_1_"+i+"_Processed.tif");
