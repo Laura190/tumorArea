@@ -16,7 +16,7 @@ File.makeDirectory(input+File.separator+"Results");
 
 run("CLIJ2 Macro Extensions", "cl_device=");
 run("ROI Manager...");
-//setBatchMode("hide");
+setBatchMode("hide");
 for (j = 1; j <= 25; j++) {
 	if(File.exists(input+File.separator+filter+j+"Z0_Bright Field_001.tif")){
 	File.openSequence(input, " filter="+filter+j+"Z");
@@ -57,6 +57,7 @@ for (j = 1; j <= 25; j++) {
 	roiManager("Deselect");
 	roiManager("Measure");
 	// Save results
+	setBatchMode("show");
 	saveAs("Results", input+File.separator+"Results"+File.separator+filter+j+"_Results.csv");
 	roiManager("Save", input+File.separator+"Results"+File.separator+filter+j+"_RoiSet.zip");
 	//setBatchMode("show");
@@ -64,6 +65,7 @@ for (j = 1; j <= 25; j++) {
 	selectWindow("Results");
 	run("Close");
 	roiManager("reset");
+	close("*");
 	}
 }
 // Save parameters
