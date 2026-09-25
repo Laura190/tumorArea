@@ -58,7 +58,8 @@ The macro creates a `Resutls` directory inside the input directory. For each pro
 |---|---|---|
 | Processed TIFF | `B3_02_1_<i>_Processed.tif` | This is the processed image after the extended depth-of-focus projection. |
 | Results CSV | `B3_02_1_<i>_Results.csv` | This contains the measurements generated from the Cellpose ROIs including area and shape descriptors |
-| ROI set | `B3_02_1_<i>_RoiSet.zip` | This contains the ROIs returned by Cellpose and saved through the ROI Manager.
+| ROI set | `B3_02_1_<i>_RoiSet.zip` | This contains the ROIs returned by Cellpose and saved through the ROI Manager. |
+| Parameters | Parameters.txt | The paramters used to create the result | 
 
 ### Output directory example
 
