@@ -1,32 +1,67 @@
-#@ File (label = "Input directory", style = "directory") input
-#@ int (label = "cell diameter for Cellpose", value=50, persist=true) cellDiam
-#@ int (label = "mininum size in pixels", value=900, persist=true) minSize
-#@ Float (label = "Scale in um", value=0.5, persist=true) scale
+Dialog.create("tumorArea");
+Dialog.addDirectory("Input directory:", "");
+Dialog.addString("Image Sequence Filter", "B3_02_1_");
+Dialog.addNumber("Cell diameter for Cellpose:", 40);
+Dialog.addNumber("Minimum diameter (um):", 30);
+Dialog.addNumber("Scale (um/pixel):", 0.5);
+Dialog.show();
+
+input = Dialog.getString();
+filter = Dialog.getString();
+cellDiam = Dialog.getNumber();
+minMajor = Dialog.getNumber();
+scale = Dialog.getNumber();
 
 run("CLIJ2 Macro Extensions", "cl_device=");
-run("Set Measurements...", "area centroid shape redirect=None decimal=9");
 run("ROI Manager...");
 setBatchMode("hide");
-for (i = 1; i <= 25; i++) {
-	if(File.exists(input+File.separator+"B3_02_1_"+i+"Z0_Bright Field_001.tif")){
-File.openSequence(input, " filter=B3_02_1_"+i+"Z");
-image1=getTitle();
-Ext.CLIJ2_push(image1);
-image2 = "EOF_sobel";
-sigma = 10.0;
-Ext.CLIJ2_extendedDepthOfFocusSobelProjection(image1, image2, sigma);
-Ext.CLIJ2_pull(image2);
-//run("Gaussian Blur...", "sigma=2");
-run("Set Scale...", "distance=1 known="+scale+" unit=um");
-run("Cellpose...", "cp_model=yeast_BF_cp3 custom_model= cell_diameter="+cellDiam+" cyto_channel=1 nuclei_channel=None min_size="+minSize+" normalize=true resample=true return_rois=true cellprob_threshold=0.0 flow_threshold=0.4 tile_overlap=0.1 niter=0 compute_flows=false shuffle=true mode_3d=None stitch_threshold=0.0 flow3d_smooth=0 torchversion=cpu usegpu=false");
-roiManager("Measure");
-File.makeDirectory(input+File.separator+"Results");
-saveAs("Tiff", input+File.separator+"Results"+File.separator+"B3_02_1_"+i+"_Processed.tif");
-saveAs("Results", input+File.separator+"Results"+File.separator+"B3_02_1_"+i+"_Results.csv");
-roiManager("Save", input+File.separator+"Results"+File.separator+"B3_02_1_"+i+"_RoiSet.zip");
-//setBatchMode("show");
-selectWindow("Results");
-run("Close");
-roiManager("reset");
+for (j = 1; j <= 25; j++) {
+	if(File.exists(input+File.separator+filter+j+"Z0_Bright Field_001.tif")){
+	File.openSequence(input, " filter="+filter+j+"Z");
+	// CLIJ2 EOF Sobel filter
+	image1=getTitle();
+	Ext.CLIJ2_push(image1);
+	image2 = "EOF_sobel";
+	sigma = 10.0;
+	Ext.CLIJ2_extendedDepthOfFocusSobelProjection(image1, image2, sigma);
+	Ext.CLIJ2_pull(image2);
+	// Cellpose find tumors
+	run("Cellpose...", "cp_model=yeast_BF_cp3 custom_model= cell_diameter="+cellDiam+" cyto_channel=1 nuclei_channel=None min_size=0 normalize=true resample=true return_rois=true cellprob_threshold=0.0 flow_threshold=0.4 tile_overlap=0.1 niter=0 compute_flows=false shuffle=true mode_3d=None stitch_threshold=0.0 flow3d_smooth=0 torchversion=cpu usegpu=false");
+	// Scale to um and measure
+	run("Set Scale...", "distance=1 known="+scale+" unit=um");
+	run("Set Measurements...", "area centroid fit shape redirect=None decimal=9");
+	roiManager("Measure");
+	// Filter ROIs based on roundness and diameter
+	n = roiManager("count");
+	if (n == 0) exit("ROI Manager is empty.");
+	for (i = 0; i < n; i++) {
+    	roiManager("select", i);
+    	run("Measure");
+	}
+	for (i = n - 1; i >= 0; i--) {
+    	roundness = getResult("Round", i);
+    	major = getResult("Major", i);
+
+    	if (roundness < 0.6 || major < minMajor) {
+        	roiManager("select", i);
+        	roiManager("delete");
+    	}
+	}
+	selectWindow("Results");
+	run("Close");
+	// Remeasure with only essential measurements
+	run("Set Measurements...", "area centroid display redirect=None decimal=9");
+	roiManager("Deselect");
+	roiManager("Measure");
+	// Save results
+	File.makeDirectory(input+File.separator+"Results");
+	saveAs("Tiff", input+File.separator+"Results"+File.separator+filter+j+"_Processed.tif");
+	saveAs("Results", input+File.separator+"Results"+File.separator+filter+j+"_Results.csv");
+	roiManager("Save", input+File.separator+"Results"+File.separator+filter+j+"_RoiSet.zip");
+	//setBatchMode("show");
+	//Clear everything before opening next image sequence
+	selectWindow("Results");
+	run("Close");
+	roiManager("reset");
 	}
 }
