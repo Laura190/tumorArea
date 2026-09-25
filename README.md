@@ -5,7 +5,7 @@ If you use this software or find is useful, please acknowledge CAMDU in line wit
 
 
 
-A pair of ImageJ Macros to segment and measure the area of tumors and output the results.
+A pair of ImageJ Macros to segment and measure the area of tumors in bright field images, filter by size and roundness and output the results.
 
 `tumorArea.ijm` Run the analysis \
 `OpenResults.ijm` A helper function to view the results in Fiji
@@ -23,7 +23,7 @@ Fiji-Cellpose
 5. Restart Fiji
 6. Open `tumorArea.ijm` in Fiji
 7. `Run > Run` or use `Ctrl+R`
-8. Select the directory containing the image files, enter values for cell diameter, minimum size (note that both these values are in pixels) and scale in um. Enter 1 for scale if you want results in pixels.
+8. Select the directory containing the image files, enter the image sequence filter string, values for cell diameter (in pixels) and minimum diameter and scale in um. Enter 1 for scale if you want results in pixels.
 
 The first time the macro is run it will be slow as Fiji-Cellpose has to install a python environment. Subsequent runs should be faster.
 
@@ -32,10 +32,10 @@ The first time the macro is run it will be slow as Fiji-Cellpose has to install 
 The macro expects the input directory to contain files matching the following naming pattern:
 
 ```text
-B3_02_1_<i>Z0_Bright_Field_001.tif
+<string+i>Z0_Bright_Field_001.tif
 ```
 
-Here, `<i>` is an integer from `1` through `25`.
+Here, `i` is an integer from `1` through `25` and string is the filter for opening the images using Image Sequence, e.g. B3_02_1_.
 
 For example:
 
@@ -52,7 +52,7 @@ The macro checks for the existence of each expected file before processing it. M
 
 ## Output files
 
-The macro creates a `Resutls` directory inside the input directory. For each processed image group, it saves:
+The macro creates a `Results` directory inside the input directory. For each processed image group, it saves:
 
 | Result | Filename | Description |
 |---|---|---|
